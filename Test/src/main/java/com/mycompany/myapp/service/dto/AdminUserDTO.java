@@ -4,6 +4,7 @@ import com.mycompany.myapp.config.Constants;
 import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
 import java.time.Instant;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.constraints.*;
@@ -190,4 +191,5 @@ public class AdminUserDTO {
             ", authorities=" + authorities +
             "}";
     }
+
 }
