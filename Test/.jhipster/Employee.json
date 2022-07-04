@@ -1,0 +1,22 @@
+{
+  "changelogDate": "20220704150445",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "profile_id",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "hire_date",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "Employee",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}

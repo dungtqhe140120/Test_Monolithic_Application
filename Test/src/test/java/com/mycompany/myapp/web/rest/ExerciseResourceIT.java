@@ -8,6 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.mycompany.myapp.IntegrationTest;
 import com.mycompany.myapp.domain.Exercise;
 import com.mycompany.myapp.repository.ExerciseRepository;
+import com.mycompany.myapp.service.dto.ExerciseDTO;
+import com.mycompany.myapp.service.mapper.ExerciseMapper;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -29,17 +33,32 @@ import org.springframework.transaction.annotation.Transactional;
 @WithMockUser
 class ExerciseResourceIT {
 
+    private static final String DEFAULT_TITLE = "AAAAAAAAAA";
+    private static final String UPDATED_TITLE = "BBBBBBBBBB";
+
     private static final String DEFAULT_SHORT_DESCRIPTION = "AAAAAAAAAA";
     private static final String UPDATED_SHORT_DESCRIPTION = "BBBBBBBBBB";
 
-    private static final String DEFAULT_FULL_DESCRIPTION = "AAAAAAAAAA";
-    private static final String UPDATED_FULL_DESCRIPTION = "BBBBBBBBBB";
+    private static final String DEFAULT_DESCRIPTION = "AAAAAAAAAA";
+    private static final String UPDATED_DESCRIPTION = "BBBBBBBBBB";
 
-    private static final Integer DEFAULT_CREATE_BY = 1;
-    private static final Integer UPDATED_CREATE_BY = 2;
+    private static final Integer DEFAULT_STATUS = 1;
+    private static final Integer UPDATED_STATUS = 2;
 
-    private static final String DEFAULT_DATA_URL = "AAAAAAAAAA";
-    private static final String UPDATED_DATA_URL = "BBBBBBBBBB";
+    private static final Integer DEFAULT_CREATED_BY = 1;
+    private static final Integer UPDATED_CREATED_BY = 2;
+
+    private static final Integer DEFAULT_UPDATED_BY = 1;
+    private static final Integer UPDATED_UPDATED_BY = 2;
+
+    private static final LocalDate DEFAULT_START_TIME = LocalDate.ofEpochDay(0L);
+    private static final LocalDate UPDATED_START_TIME = LocalDate.now(ZoneId.systemDefault());
+
+    private static final LocalDate DEFAULT_END_TIME = LocalDate.ofEpochDay(0L);
+    private static final LocalDate UPDATED_END_TIME = LocalDate.now(ZoneId.systemDefault());
+
+    private static final String DEFAULT_IMAGE_URL = "AAAAAAAAAA";
+    private static final String UPDATED_IMAGE_URL = "BBBBBBBBBB";
 
     private static final String ENTITY_API_URL = "/api/exercises";
     private static final String ENTITY_API_URL_ID = ENTITY_API_URL + "/{id}";
@@ -49,6 +68,9 @@ class ExerciseResourceIT {
 
     @Autowired
     private ExerciseRepository exerciseRepository;
+
+    @Autowired
+    private ExerciseMapper exerciseMapper;
 
     @Autowired
     private EntityManager em;
@@ -66,10 +88,15 @@ class ExerciseResourceIT {
      */
     public static Exercise createEntity(EntityManager em) {
         Exercise exercise = new Exercise()
+            .title(DEFAULT_TITLE)
             .short_description(DEFAULT_SHORT_DESCRIPTION)
-            .full_description(DEFAULT_FULL_DESCRIPTION)
-            .create_by(DEFAULT_CREATE_BY)
-            .data_url(DEFAULT_DATA_URL);
+            .description(DEFAULT_DESCRIPTION)
+            .status(DEFAULT_STATUS)
+            .created_by(DEFAULT_CREATED_BY)
+            .updated_by(DEFAULT_UPDATED_BY)
+            .start_time(DEFAULT_START_TIME)
+            .end_time(DEFAULT_END_TIME)
+            .image_url(DEFAULT_IMAGE_URL);
         return exercise;
     }
 
@@ -81,10 +108,15 @@ class ExerciseResourceIT {
      */
     public static Exercise createUpdatedEntity(EntityManager em) {
         Exercise exercise = new Exercise()
+            .title(UPDATED_TITLE)
             .short_description(UPDATED_SHORT_DESCRIPTION)
-            .full_description(UPDATED_FULL_DESCRIPTION)
-            .create_by(UPDATED_CREATE_BY)
-            .data_url(UPDATED_DATA_URL);
+            .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
+            .created_by(UPDATED_CREATED_BY)
+            .updated_by(UPDATED_UPDATED_BY)
+            .start_time(UPDATED_START_TIME)
+            .end_time(UPDATED_END_TIME)
+            .image_url(UPDATED_IMAGE_URL);
         return exercise;
     }
 
@@ -98,18 +130,24 @@ class ExerciseResourceIT {
     void createExercise() throws Exception {
         int databaseSizeBeforeCreate = exerciseRepository.findAll().size();
         // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
         restExerciseMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exercise)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exerciseDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Exercise in the database
         List<Exercise> exerciseList = exerciseRepository.findAll();
         assertThat(exerciseList).hasSize(databaseSizeBeforeCreate + 1);
         Exercise testExercise = exerciseList.get(exerciseList.size() - 1);
+        assertThat(testExercise.getTitle()).isEqualTo(DEFAULT_TITLE);
         assertThat(testExercise.getShort_description()).isEqualTo(DEFAULT_SHORT_DESCRIPTION);
-        assertThat(testExercise.getFull_description()).isEqualTo(DEFAULT_FULL_DESCRIPTION);
-        assertThat(testExercise.getCreate_by()).isEqualTo(DEFAULT_CREATE_BY);
-        assertThat(testExercise.getData_url()).isEqualTo(DEFAULT_DATA_URL);
+        assertThat(testExercise.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testExercise.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testExercise.getCreated_by()).isEqualTo(DEFAULT_CREATED_BY);
+        assertThat(testExercise.getUpdated_by()).isEqualTo(DEFAULT_UPDATED_BY);
+        assertThat(testExercise.getStart_time()).isEqualTo(DEFAULT_START_TIME);
+        assertThat(testExercise.getEnd_time()).isEqualTo(DEFAULT_END_TIME);
+        assertThat(testExercise.getImage_url()).isEqualTo(DEFAULT_IMAGE_URL);
     }
 
     @Test
@@ -117,51 +155,18 @@ class ExerciseResourceIT {
     void createExerciseWithExistingId() throws Exception {
         // Create the Exercise with an existing ID
         exercise.setId(1L);
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
 
         int databaseSizeBeforeCreate = exerciseRepository.findAll().size();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restExerciseMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exercise)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exerciseDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Exercise in the database
         List<Exercise> exerciseList = exerciseRepository.findAll();
         assertThat(exerciseList).hasSize(databaseSizeBeforeCreate);
-    }
-
-    @Test
-    @Transactional
-    void checkShort_descriptionIsRequired() throws Exception {
-        int databaseSizeBeforeTest = exerciseRepository.findAll().size();
-        // set the field null
-        exercise.setShort_description(null);
-
-        // Create the Exercise, which fails.
-
-        restExerciseMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exercise)))
-            .andExpect(status().isBadRequest());
-
-        List<Exercise> exerciseList = exerciseRepository.findAll();
-        assertThat(exerciseList).hasSize(databaseSizeBeforeTest);
-    }
-
-    @Test
-    @Transactional
-    void checkCreate_byIsRequired() throws Exception {
-        int databaseSizeBeforeTest = exerciseRepository.findAll().size();
-        // set the field null
-        exercise.setCreate_by(null);
-
-        // Create the Exercise, which fails.
-
-        restExerciseMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exercise)))
-            .andExpect(status().isBadRequest());
-
-        List<Exercise> exerciseList = exerciseRepository.findAll();
-        assertThat(exerciseList).hasSize(databaseSizeBeforeTest);
     }
 
     @Test
@@ -176,10 +181,15 @@ class ExerciseResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.[*].id").value(hasItem(exercise.getId().intValue())))
+            .andExpect(jsonPath("$.[*].title").value(hasItem(DEFAULT_TITLE)))
             .andExpect(jsonPath("$.[*].short_description").value(hasItem(DEFAULT_SHORT_DESCRIPTION)))
-            .andExpect(jsonPath("$.[*].full_description").value(hasItem(DEFAULT_FULL_DESCRIPTION)))
-            .andExpect(jsonPath("$.[*].create_by").value(hasItem(DEFAULT_CREATE_BY)))
-            .andExpect(jsonPath("$.[*].data_url").value(hasItem(DEFAULT_DATA_URL)));
+            .andExpect(jsonPath("$.[*].description").value(hasItem(DEFAULT_DESCRIPTION)))
+            .andExpect(jsonPath("$.[*].status").value(hasItem(DEFAULT_STATUS)))
+            .andExpect(jsonPath("$.[*].created_by").value(hasItem(DEFAULT_CREATED_BY)))
+            .andExpect(jsonPath("$.[*].updated_by").value(hasItem(DEFAULT_UPDATED_BY)))
+            .andExpect(jsonPath("$.[*].start_time").value(hasItem(DEFAULT_START_TIME.toString())))
+            .andExpect(jsonPath("$.[*].end_time").value(hasItem(DEFAULT_END_TIME.toString())))
+            .andExpect(jsonPath("$.[*].image_url").value(hasItem(DEFAULT_IMAGE_URL)));
     }
 
     @Test
@@ -194,10 +204,15 @@ class ExerciseResourceIT {
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
             .andExpect(jsonPath("$.id").value(exercise.getId().intValue()))
+            .andExpect(jsonPath("$.title").value(DEFAULT_TITLE))
             .andExpect(jsonPath("$.short_description").value(DEFAULT_SHORT_DESCRIPTION))
-            .andExpect(jsonPath("$.full_description").value(DEFAULT_FULL_DESCRIPTION))
-            .andExpect(jsonPath("$.create_by").value(DEFAULT_CREATE_BY))
-            .andExpect(jsonPath("$.data_url").value(DEFAULT_DATA_URL));
+            .andExpect(jsonPath("$.description").value(DEFAULT_DESCRIPTION))
+            .andExpect(jsonPath("$.status").value(DEFAULT_STATUS))
+            .andExpect(jsonPath("$.created_by").value(DEFAULT_CREATED_BY))
+            .andExpect(jsonPath("$.updated_by").value(DEFAULT_UPDATED_BY))
+            .andExpect(jsonPath("$.start_time").value(DEFAULT_START_TIME.toString()))
+            .andExpect(jsonPath("$.end_time").value(DEFAULT_END_TIME.toString()))
+            .andExpect(jsonPath("$.image_url").value(DEFAULT_IMAGE_URL));
     }
 
     @Test
@@ -220,16 +235,22 @@ class ExerciseResourceIT {
         // Disconnect from session so that the updates on updatedExercise are not directly saved in db
         em.detach(updatedExercise);
         updatedExercise
+            .title(UPDATED_TITLE)
             .short_description(UPDATED_SHORT_DESCRIPTION)
-            .full_description(UPDATED_FULL_DESCRIPTION)
-            .create_by(UPDATED_CREATE_BY)
-            .data_url(UPDATED_DATA_URL);
+            .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
+            .created_by(UPDATED_CREATED_BY)
+            .updated_by(UPDATED_UPDATED_BY)
+            .start_time(UPDATED_START_TIME)
+            .end_time(UPDATED_END_TIME)
+            .image_url(UPDATED_IMAGE_URL);
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(updatedExercise);
 
         restExerciseMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedExercise.getId())
+                put(ENTITY_API_URL_ID, exerciseDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(updatedExercise))
+                    .content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
             )
             .andExpect(status().isOk());
 
@@ -237,10 +258,15 @@ class ExerciseResourceIT {
         List<Exercise> exerciseList = exerciseRepository.findAll();
         assertThat(exerciseList).hasSize(databaseSizeBeforeUpdate);
         Exercise testExercise = exerciseList.get(exerciseList.size() - 1);
+        assertThat(testExercise.getTitle()).isEqualTo(UPDATED_TITLE);
         assertThat(testExercise.getShort_description()).isEqualTo(UPDATED_SHORT_DESCRIPTION);
-        assertThat(testExercise.getFull_description()).isEqualTo(UPDATED_FULL_DESCRIPTION);
-        assertThat(testExercise.getCreate_by()).isEqualTo(UPDATED_CREATE_BY);
-        assertThat(testExercise.getData_url()).isEqualTo(UPDATED_DATA_URL);
+        assertThat(testExercise.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testExercise.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testExercise.getCreated_by()).isEqualTo(UPDATED_CREATED_BY);
+        assertThat(testExercise.getUpdated_by()).isEqualTo(UPDATED_UPDATED_BY);
+        assertThat(testExercise.getStart_time()).isEqualTo(UPDATED_START_TIME);
+        assertThat(testExercise.getEnd_time()).isEqualTo(UPDATED_END_TIME);
+        assertThat(testExercise.getImage_url()).isEqualTo(UPDATED_IMAGE_URL);
     }
 
     @Test
@@ -249,12 +275,15 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restExerciseMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, exercise.getId())
+                put(ENTITY_API_URL_ID, exerciseDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(exercise))
+                    .content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -269,12 +298,15 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restExerciseMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(TestUtil.convertObjectToJsonBytes(exercise))
+                    .content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -289,9 +321,12 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restExerciseMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exercise)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(TestUtil.convertObjectToJsonBytes(exerciseDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Exercise in the database
@@ -311,7 +346,11 @@ class ExerciseResourceIT {
         Exercise partialUpdatedExercise = new Exercise();
         partialUpdatedExercise.setId(exercise.getId());
 
-        partialUpdatedExercise.full_description(UPDATED_FULL_DESCRIPTION);
+        partialUpdatedExercise
+            .short_description(UPDATED_SHORT_DESCRIPTION)
+            .created_by(UPDATED_CREATED_BY)
+            .end_time(UPDATED_END_TIME)
+            .image_url(UPDATED_IMAGE_URL);
 
         restExerciseMockMvc
             .perform(
@@ -325,10 +364,15 @@ class ExerciseResourceIT {
         List<Exercise> exerciseList = exerciseRepository.findAll();
         assertThat(exerciseList).hasSize(databaseSizeBeforeUpdate);
         Exercise testExercise = exerciseList.get(exerciseList.size() - 1);
-        assertThat(testExercise.getShort_description()).isEqualTo(DEFAULT_SHORT_DESCRIPTION);
-        assertThat(testExercise.getFull_description()).isEqualTo(UPDATED_FULL_DESCRIPTION);
-        assertThat(testExercise.getCreate_by()).isEqualTo(DEFAULT_CREATE_BY);
-        assertThat(testExercise.getData_url()).isEqualTo(DEFAULT_DATA_URL);
+        assertThat(testExercise.getTitle()).isEqualTo(DEFAULT_TITLE);
+        assertThat(testExercise.getShort_description()).isEqualTo(UPDATED_SHORT_DESCRIPTION);
+        assertThat(testExercise.getDescription()).isEqualTo(DEFAULT_DESCRIPTION);
+        assertThat(testExercise.getStatus()).isEqualTo(DEFAULT_STATUS);
+        assertThat(testExercise.getCreated_by()).isEqualTo(UPDATED_CREATED_BY);
+        assertThat(testExercise.getUpdated_by()).isEqualTo(DEFAULT_UPDATED_BY);
+        assertThat(testExercise.getStart_time()).isEqualTo(DEFAULT_START_TIME);
+        assertThat(testExercise.getEnd_time()).isEqualTo(UPDATED_END_TIME);
+        assertThat(testExercise.getImage_url()).isEqualTo(UPDATED_IMAGE_URL);
     }
 
     @Test
@@ -344,10 +388,15 @@ class ExerciseResourceIT {
         partialUpdatedExercise.setId(exercise.getId());
 
         partialUpdatedExercise
+            .title(UPDATED_TITLE)
             .short_description(UPDATED_SHORT_DESCRIPTION)
-            .full_description(UPDATED_FULL_DESCRIPTION)
-            .create_by(UPDATED_CREATE_BY)
-            .data_url(UPDATED_DATA_URL);
+            .description(UPDATED_DESCRIPTION)
+            .status(UPDATED_STATUS)
+            .created_by(UPDATED_CREATED_BY)
+            .updated_by(UPDATED_UPDATED_BY)
+            .start_time(UPDATED_START_TIME)
+            .end_time(UPDATED_END_TIME)
+            .image_url(UPDATED_IMAGE_URL);
 
         restExerciseMockMvc
             .perform(
@@ -361,10 +410,15 @@ class ExerciseResourceIT {
         List<Exercise> exerciseList = exerciseRepository.findAll();
         assertThat(exerciseList).hasSize(databaseSizeBeforeUpdate);
         Exercise testExercise = exerciseList.get(exerciseList.size() - 1);
+        assertThat(testExercise.getTitle()).isEqualTo(UPDATED_TITLE);
         assertThat(testExercise.getShort_description()).isEqualTo(UPDATED_SHORT_DESCRIPTION);
-        assertThat(testExercise.getFull_description()).isEqualTo(UPDATED_FULL_DESCRIPTION);
-        assertThat(testExercise.getCreate_by()).isEqualTo(UPDATED_CREATE_BY);
-        assertThat(testExercise.getData_url()).isEqualTo(UPDATED_DATA_URL);
+        assertThat(testExercise.getDescription()).isEqualTo(UPDATED_DESCRIPTION);
+        assertThat(testExercise.getStatus()).isEqualTo(UPDATED_STATUS);
+        assertThat(testExercise.getCreated_by()).isEqualTo(UPDATED_CREATED_BY);
+        assertThat(testExercise.getUpdated_by()).isEqualTo(UPDATED_UPDATED_BY);
+        assertThat(testExercise.getStart_time()).isEqualTo(UPDATED_START_TIME);
+        assertThat(testExercise.getEnd_time()).isEqualTo(UPDATED_END_TIME);
+        assertThat(testExercise.getImage_url()).isEqualTo(UPDATED_IMAGE_URL);
     }
 
     @Test
@@ -373,12 +427,15 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restExerciseMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, exercise.getId())
+                patch(ENTITY_API_URL_ID, exerciseDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(exercise))
+                    .content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -393,12 +450,15 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restExerciseMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, count.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(TestUtil.convertObjectToJsonBytes(exercise))
+                    .content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -413,9 +473,14 @@ class ExerciseResourceIT {
         int databaseSizeBeforeUpdate = exerciseRepository.findAll().size();
         exercise.setId(count.incrementAndGet());
 
+        // Create the Exercise
+        ExerciseDTO exerciseDTO = exerciseMapper.toDto(exercise);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restExerciseMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(exercise)))
+            .perform(
+                patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(TestUtil.convertObjectToJsonBytes(exerciseDTO))
+            )
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Exercise in the database

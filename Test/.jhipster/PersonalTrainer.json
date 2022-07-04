@@ -1,0 +1,44 @@
+{
+  "changelogDate": "20220704153331",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "profile_id",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "year_experience",
+      "fieldType": "Float"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "facebook_url",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "instagram_url",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "join_date",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "zalo_url",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "hire_date",
+      "fieldType": "LocalDate"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "PersonalTrainer",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}

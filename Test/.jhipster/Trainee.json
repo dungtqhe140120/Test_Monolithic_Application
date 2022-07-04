@@ -1,0 +1,16 @@
+{
+  "changelogDate": "20220704153626",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "profile_id",
+      "fieldType": "Integer"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "Trainee",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}

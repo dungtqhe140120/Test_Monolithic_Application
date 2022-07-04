@@ -1,10 +1,11 @@
 {
-  "changelogDate": "20220704154747",
+  "changelogDate": "20220704152615",
   "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "title",
-      "fieldType": "String"
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
     },
     {
       "fieldName": "short_description",
@@ -15,8 +16,12 @@
       "fieldType": "String"
     },
     {
-      "fieldName": "status",
-      "fieldType": "Integer"
+      "fieldName": "context",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "image_url",
+      "fieldType": "String"
     },
     {
       "fieldName": "created_by",
@@ -27,20 +32,16 @@
       "fieldType": "Integer"
     },
     {
-      "fieldName": "start_time",
-      "fieldType": "LocalDate"
+      "fieldName": "display_order",
+      "fieldType": "Integer"
     },
     {
-      "fieldName": "end_time",
-      "fieldType": "LocalDate"
-    },
-    {
-      "fieldName": "image_url",
-      "fieldType": "String"
+      "fieldName": "is_active",
+      "fieldType": "Boolean"
     }
   ],
   "jpaMetamodelFiltering": false,
-  "name": "Exercise",
+  "name": "Blog",
   "pagination": "pagination",
   "readOnly": false,
   "relationships": [],

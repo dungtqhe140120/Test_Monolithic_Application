@@ -4,11 +4,11 @@ import java.io.Serializable;
 import javax.persistence.*;
 
 /**
- * A Exercise.
+ * A Trainee.
  */
 @Entity
-@Table(name = "exercise")
-public class Exercise implements Serializable {
+@Table(name = "trainee")
+public class Trainee implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -18,19 +18,35 @@ public class Exercise implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @Column(name = "profile_id")
+    private Integer profile_id;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
         return this.id;
     }
 
-    public Exercise id(Long id) {
+    public Trainee id(Long id) {
         this.setId(id);
         return this;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getProfile_id() {
+        return this.profile_id;
+    }
+
+    public Trainee profile_id(Integer profile_id) {
+        this.setProfile_id(profile_id);
+        return this;
+    }
+
+    public void setProfile_id(Integer profile_id) {
+        this.profile_id = profile_id;
     }
 
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
@@ -40,10 +56,10 @@ public class Exercise implements Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Exercise)) {
+        if (!(o instanceof Trainee)) {
             return false;
         }
-        return id != null && id.equals(((Exercise) o).id);
+        return id != null && id.equals(((Trainee) o).id);
     }
 
     @Override
@@ -55,8 +71,9 @@ public class Exercise implements Serializable {
     // prettier-ignore
     @Override
     public String toString() {
-        return "Exercise{" +
+        return "Trainee{" +
             "id=" + getId() +
+            ", profile_id=" + getProfile_id() +
             "}";
     }
 }

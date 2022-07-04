@@ -1,0 +1,41 @@
+{
+  "changelogDate": "20220704153549",
+  "dto": "mapstruct",
+  "entityTableName": "jhi_profile",
+  "fields": [
+    {
+      "fieldName": "phone",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "address",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "gender",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "fullname",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "birthday",
+      "fieldType": "LocalDate"
+    },
+    {
+      "fieldName": "avatar",
+      "fieldType": "String"
+    }
+  ],
+  "jpaMetamodelFiltering": false,
+  "name": "Profile",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}
